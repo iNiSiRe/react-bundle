@@ -3,6 +3,11 @@
     "type": "library",
     "description": "React Bundle",
     "keywords": ["reactphp", "symfony"],
+    "autoload": {
+        "psr-4": {
+            "inisire\\ReactBundle\\": ""
+        }
+    },
     "require": {
         "php": ">=7.0.0",
 	"react/http": "dev-master"
