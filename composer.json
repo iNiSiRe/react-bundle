@@ -1,0 +1,11 @@
+{
+    "name": "inisire/react-bundle",
+    "type": "library",
+    "description": "React Bundle",
+    "keywords": ["reactphp", "symfony"],
+    "require": {
+        "php": ">=7.0.0",
+	"react/http": "dev-master"
+    },
+    "bin": ["bin/server.php"]
+}
