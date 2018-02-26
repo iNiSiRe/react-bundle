@@ -4,7 +4,9 @@ $loader = require __DIR__ . '/../../../../app/autoload.php';
 
 require_once __DIR__ . '/../../../../app/AppKernel.php';
 
-$kernel = new AppKernel('dev', true);
+$environment = $_ENV['SYMFONY_ENV'] ?? 'dev';
+
+$kernel = new AppKernel($environment, $environment == 'dev');
 $kernel->boot();
 
 $container = $kernel->getContainer();
