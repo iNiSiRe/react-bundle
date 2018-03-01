@@ -11,7 +11,7 @@ namespace inisire\ReactBundle\Proxy;
 
 use Psr\Http\Message\UploadedFileInterface;
 use React\EventLoop\LoopInterface;
-use React\Http\UploadedFile;
+use React\Http\Io\UploadedFile;
 use React\Stream\ReadableResourceStream;
 use React\Stream\WritableResourceStream;
 

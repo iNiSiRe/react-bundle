@@ -10,7 +10,8 @@
     },
     "require": {
         "php": ">=7.0.0",
-	"react/http": "dev-master"
+	    "react/http": "dev-master",
+        "symfony/psr-http-message-bridge": "^1.0"
     },
     "bin": ["bin/server.php"]
 }
