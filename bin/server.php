@@ -1,6 +1,8 @@
 <?php
 
 use App\Kernel;
+use inisire\ReactBundle\Event\Events;
+use inisire\ReactBundle\Event\LoopRunEvent;
 
 $loader = require __DIR__ . '/../../../../vendor/autoload.php';
 
@@ -12,4 +14,9 @@ $kernel->boot();
 $container = $kernel->getContainer();
 
 $container->get('react.http.server')->start();
-$container->get('react.loop')->run();
+$loop = $container->get('react.loop');
+
+$event = new LoopRunEvent($loop);
+$container->get('event_dispatcher')->dispatch(Events::LOOP_RUN, $event);
+
+$loop->run();

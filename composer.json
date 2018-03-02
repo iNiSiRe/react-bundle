@@ -1,6 +1,6 @@
 {
     "name": "inisire/react-bundle",
-    "type": "library",
+    "type": "symfony-bundle",
     "description": "React Bundle",
     "keywords": ["reactphp", "symfony"],
     "autoload": {
