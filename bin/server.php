@@ -6,7 +6,7 @@ use inisire\ReactBundle\Event\LoopRunEvent;
 
 $loader = require __DIR__ . '/../../../../vendor/autoload.php';
 
-$environment = $_ENV['SYMFONY_ENV'] ?? 'dev';
+$environment = $_ENV['SYMFONY_ENV'] ?? $_ENV['APP_ENV'] ?? 'dev';
 
 $kernel = new Kernel($environment, $environment == 'dev');
 $kernel->boot();
