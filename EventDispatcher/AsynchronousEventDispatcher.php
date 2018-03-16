@@ -11,6 +11,7 @@ class AsynchronousEventDispatcher
      * @var DispatcherWorker
      */
     private $worker;
+
     /**
      * @var LoggerInterface
      */
