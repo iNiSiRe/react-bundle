@@ -2,6 +2,8 @@
 
 namespace inisire\ReactBundle\EventDispatcher;
 
+use Doctrine\ORM\EntityManagerInterface;
+use inisire\ReactBundle\EventDispatcher\Proxy\EntityManagerProxy;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\Event;
 

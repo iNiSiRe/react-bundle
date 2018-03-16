@@ -3,6 +3,7 @@
 namespace inisire\ReactBundle\EventDispatcher;
 
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 
 class DispatcherWorker extends \Thread
 {
@@ -60,6 +61,9 @@ class DispatcherWorker extends \Thread
     {
         require_once __DIR__ . '/../../../autoload.php';
 
+        $kernel = new \AppKernel('dev', false);
+        $kernel->boot();
+
         $that = $this;
 
         while (true) {
@@ -84,6 +88,10 @@ class DispatcherWorker extends \Thread
             }
 
             list($listener, $method) = $listeners[0];
+
+            if ($listener instanceof ContainerAwareInterface) {
+                $listener->setContainer($kernel->getContainer());
+            }
 
             call_user_func([$listener, $method], $event);
         }
