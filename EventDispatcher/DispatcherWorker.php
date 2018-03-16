@@ -23,17 +23,24 @@ class DispatcherWorker extends \Thread
     public $listeners;
 
     /**
+     * @var string
+     */
+    private $kernelClass;
+
+    /**
      * DispatcherWorker constructor.
      *
+     * @param string          $kernelClass
      * @param LoggerInterface $logger
      */
-    public function __construct(LoggerInterface $logger)
+    public function __construct($kernelClass, LoggerInterface $logger)
     {
         $this->logger = $logger;
         $this->firedEvents = new \Volatile();
         $this->listeners = new ListenerPool();
 
         $this->start();
+        $this->kernelClass = $kernelClass;
     }
 
     /**
@@ -61,7 +68,7 @@ class DispatcherWorker extends \Thread
     {
         require_once __DIR__ . '/../../../autoload.php';
 
-        $kernel = new \AppKernel('dev', false);
+        $kernel = new $this->kernelClass('dev', false);
         $kernel->boot();
 
         $that = $this;
