@@ -1,6 +1,6 @@
 {
     "name": "inisire/react-bundle",
-    "type": "library",
+    "type": "symfony-bundle",
     "description": "React Bundle",
     "keywords": ["reactphp", "symfony"],
     "autoload": {
@@ -10,8 +10,10 @@
     },
     "require": {
         "php": ">=7.0.0",
-        "ext-pthreads": ">=3.0",
-	    "react/http": "dev-master"
+	    "ext-pthreads": ">=3.0",
+	    "react/http": "dev-master",
+        "symfony/psr-http-message-bridge": "^1.0",
+        "zendframework/zend-diactoros": "^1.7"
     },
     "bin": ["bin/server.php"]
 }

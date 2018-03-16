@@ -6,9 +6,7 @@ namespace inisire\ReactBundle\Middleware;
 use inisire\ReactBundle\Proxy\UploadedFileProxy;
 use Psr\Http\Message\ServerRequestInterface;
 use React\EventLoop\LoopInterface;
-use React\Http\UploadedFile;
-use React\Stream\ReadableResourceStream;
-use React\Stream\WritableResourceStream;
+use React\Http\Io\UploadedFile;
 
 class UploadedFilesProcessor
 {

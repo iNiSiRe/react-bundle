@@ -3,6 +3,7 @@ services:
     React\EventLoop\Factory: ~
 
     react.loop:
+        public: true
         class: React\EventLoop\LoopInterface
         factory: 'React\EventLoop\Factory:create'
 
@@ -17,6 +18,7 @@ services:
         class: Symfony\Bridge\PsrHttpMessage\Factory\DiactorosFactory
 
     react.http.server:
+        public: true
         class: inisire\ReactBundle\Server\Server
         arguments:
           - "@react.loop"

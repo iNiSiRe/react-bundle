@@ -7,9 +7,9 @@ use Monolog\Logger;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use React\EventLoop\LoopInterface;
+use React\Http\Io\MiddlewareRunner;
 use React\Http\Middleware\RequestBodyBufferMiddleware;
 use React\Http\Middleware\RequestBodyParserMiddleware;
-use React\Http\MiddlewareRunner;
 use React\Http\Server as HttpServer;
 use React\Socket\Server as SocketServer;
 use Symfony\Bridge\PsrHttpMessage\Factory\DiactorosFactory;
@@ -37,7 +37,7 @@ class Server
     private $httpServer;
 
     /**
-     * @var \AppKernel
+     * @var App\Kernel
      */
     private $kernel;
 
