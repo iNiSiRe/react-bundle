@@ -20,12 +20,11 @@ class AsynchronousEventDispatcher
     /**
      * AsynchronousEventDispatcher constructor.
      *
-     * @param DispatcherWorker $worker
      * @param LoggerInterface  $logger
      */
-    public function __construct(DispatcherWorker $worker, LoggerInterface $logger)
+    public function __construct(LoggerInterface $logger)
     {
-        $this->worker = $worker;
+        $this->worker = new DispatcherWorker($logger);
         $this->logger = $logger;
     }
 
