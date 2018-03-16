@@ -10,7 +10,8 @@
     },
     "require": {
         "php": ">=7.0.0",
-	"react/http": "dev-master"
+        "ext-pthreads": ">=3.0",
+	    "react/http": "dev-master"
     },
     "bin": ["bin/server.php"]
 }
