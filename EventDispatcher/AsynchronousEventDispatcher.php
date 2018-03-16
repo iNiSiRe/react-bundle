@@ -37,7 +37,11 @@ class AsynchronousEventDispatcher
      */
     public function dispatch($name, Event $event = null)
     {
-        $this->worker->addFiredEvent($name, $event);
+        $this->worker->synchronized(function ($worker, $name, $event) {
+
+            $worker->addFiredEvent($name, $event);
+
+        }, $this->worker, $name, $event);
     }
 
     /**
@@ -46,6 +50,10 @@ class AsynchronousEventDispatcher
      */
     public function addListener($event, callable $listener)
     {
-        $this->worker->addListener($event, $listener);
+        $this->worker->synchronized(function ($worker, $event, $listener) {
+
+            $worker->addListener($event, $listener);
+
+        }, $this->worker, $event, $listener);
     }
 }

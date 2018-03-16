@@ -75,32 +75,36 @@ class DispatcherWorker extends \Thread
 
         while (true) {
 
-            while ($that->firedEvents->count() == 0) {
-                $that->logger->debug('DispatcherWorker::run wait');
-                usleep(1000000);
-            }
+            $this->synchronized(function ($that, $kernel) {
 
-            $eventData = $that->firedEvents->pop();
+                while ($that->firedEvents->count() == 0) {
+                    $that->logger->debug('DispatcherWorker::run wait');
+                    usleep(1000000);
+                }
 
-            $that->logger->debug('DispatcherWorker::run dequeue', [$eventData, $that->firedEvents->count()]);
-            $that->logger->debug('DispatcherWorker::run listeners', [$that->listeners]);
+                $eventData = $that->firedEvents->pop();
 
-            $name = $eventData[0];
-            $event = $eventData[1];
+                $that->logger->debug('DispatcherWorker::run dequeue', [$eventData, $that->firedEvents->count()]);
+                $that->logger->debug('DispatcherWorker::run listeners', [$that->listeners]);
 
-            $listeners = $this->listeners->getListeners($name);
+                $name = $eventData[0];
+                $event = $eventData[1];
 
-            if (empty($listeners)) {
-                continue;
-            }
+                $listeners = $this->listeners->getListeners($name);
 
-            list($listener, $method) = $listeners[0];
+                if (empty($listeners)) {
+                    return;
+                }
 
-            if ($listener instanceof ContainerAwareInterface) {
-                $listener->setContainer($kernel->getContainer());
-            }
+                list($listener, $method) = $listeners[0];
 
-            call_user_func([$listener, $method], $event);
+                if ($listener instanceof ContainerAwareInterface) {
+                    $listener->setContainer($kernel->getContainer());
+                }
+
+                call_user_func([$listener, $method], $event);
+
+            }, $that, $kernel);
         }
     }
 
