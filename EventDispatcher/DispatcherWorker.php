@@ -36,11 +36,11 @@ class DispatcherWorker extends \Thread
     public function __construct($kernelClass, LoggerInterface $logger)
     {
         $this->logger = $logger;
+        $this->kernelClass = $kernelClass;
         $this->firedEvents = new \Volatile();
         $this->listeners = new ListenerPool();
 
         $this->start();
-        $this->kernelClass = $kernelClass;
     }
 
     /**
