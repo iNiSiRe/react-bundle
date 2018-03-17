@@ -75,36 +75,32 @@ class DispatcherWorker extends \Thread
 
         while (true) {
 
-            $this->synchronized(function ($that, $kernel) {
+            while ($that->firedEvents->count() == 0) {
+                $that->logger->debug('DispatcherWorker::run wait');
+                usleep(1000000);
+            }
 
-                while ($that->firedEvents->count() == 0) {
-                    $that->logger->debug('DispatcherWorker::run wait');
-                    usleep(1000000);
-                }
+            $eventData = $that->firedEvents->pop();
 
-                $eventData = $that->firedEvents->pop();
+            $that->logger->debug('DispatcherWorker::run dequeue', [$eventData, $that->firedEvents->count()]);
+            $that->logger->debug('DispatcherWorker::run listeners', [$that->listeners]);
 
-                $that->logger->debug('DispatcherWorker::run dequeue', [$eventData, $that->firedEvents->count()]);
-                $that->logger->debug('DispatcherWorker::run listeners', [$that->listeners]);
+            $name = $eventData[0];
+            $event = $eventData[1];
 
-                $name = $eventData[0];
-                $event = $eventData[1];
+            $listeners = $this->listeners->getListeners($name);
 
-                $listeners = $this->listeners->getListeners($name);
+            if (empty($listeners)) {
+                continue;
+            }
 
-                if (empty($listeners)) {
-                    return;
-                }
+            list($listener, $method) = $listeners[0];
 
-                list($listener, $method) = $listeners[0];
+            if ($listener instanceof ContainerAwareInterface) {
+                $listener->setContainer($kernel->getContainer());
+            }
 
-                if ($listener instanceof ContainerAwareInterface) {
-                    $listener->setContainer($kernel->getContainer());
-                }
-
-                call_user_func([$listener, $method], $event);
-
-            }, $that, $kernel);
+            call_user_func([$listener, $method], $event);
         }
     }
 
