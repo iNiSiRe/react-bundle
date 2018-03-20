@@ -2,8 +2,6 @@
 
 namespace inisire\ReactBundle\EventDispatcher;
 
-use Doctrine\ORM\EntityManagerInterface;
-use inisire\ReactBundle\EventDispatcher\Proxy\EntityManagerProxy;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\Event;
 
@@ -55,5 +53,15 @@ class AsynchronousEventDispatcher
             $worker->addListener($event, $listener);
 
         }, $this->worker, $event, $listener);
+    }
+
+    /**
+     * Run worker
+     */
+    public function start()
+    {
+        if (!$this->worker->isStarted()) {
+            $this->worker->start();
+        }
     }
 }

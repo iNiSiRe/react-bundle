@@ -39,8 +39,6 @@ class DispatcherWorker extends \Thread
         $this->kernelClass = $kernelClass;
         $this->firedEvents = new \Volatile();
         $this->listeners = new ListenerPool();
-
-        $this->start();
     }
 
     /**
@@ -88,7 +86,7 @@ class DispatcherWorker extends \Thread
             $name = $eventData[0];
             $event = $eventData[1];
 
-            $listeners = $this->listeners->getListeners($name);
+            $listeners = $that->listeners->getListeners($name);
 
             if (empty($listeners)) {
                 continue;
@@ -104,6 +102,9 @@ class DispatcherWorker extends \Thread
         }
     }
 
+    /**
+     * @param int $options
+     */
     public function start(int $options = PTHREADS_INHERIT_NONE)
     {
         parent::start(PTHREADS_INHERIT_NONE);
