@@ -73,8 +73,6 @@ class Server
         $this->socketServer = $socketServer;
 
         $this->httpServer = new HttpServer(new MiddlewareRunner([
-            new RequestBodyBufferMiddleware(16 * 1024 * 1024),
-            new RequestBodyParserMiddleware(),
             new UploadedFilesProcessor($this->loop),
             [$this, 'handleRequest']]
         ));
