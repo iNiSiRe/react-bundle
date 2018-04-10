@@ -48,6 +48,11 @@ class AsynchronousEventDispatcher
      */
     public function addListener($event, callable $listener)
     {
+        if ($this->worker->isTerminated()) {
+            $this->logger->debug('DispatcherWorker::terminated start');
+            $this->worker->start();
+        }
+
         $this->worker->synchronized(function ($worker, $event, $listener) {
 
             $worker->addListener($event, $listener);
