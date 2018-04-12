@@ -8,11 +8,6 @@ use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 class DispatcherWorker extends \Thread
 {
     /**
-     * @var LoggerInterface
-     */
-    private $logger;
-
-    /**
      * @var \Threaded
      */
     public $firedEvents;
@@ -31,11 +26,9 @@ class DispatcherWorker extends \Thread
      * DispatcherWorker constructor.
      *
      * @param string          $kernelClass
-     * @param LoggerInterface $logger
      */
-    public function __construct($kernelClass, LoggerInterface $logger)
+    public function __construct($kernelClass)
     {
-        $this->logger = $logger;
         $this->kernelClass = $kernelClass;
         $this->firedEvents = new \Volatile();
         $this->listeners = new ListenerPool();
@@ -69,19 +62,45 @@ class DispatcherWorker extends \Thread
         $kernel = new $this->kernelClass('dev', false);
         $kernel->boot();
 
+        $logger = $kernel->getContainer()->get('logger');
+
+        set_error_handler(function () {}, E_ALL);
+        register_shutdown_function(function () {});
+
+        set_exception_handler(function ($e) use ($logger) {
+
+            if ($e instanceof \Throwable) {
+                $message = sprintf(
+                    'Uncaught exception %s with message "%s" at %s:%s',
+                    get_class($e),
+                    $e->getMessage(),
+                    $e->getFile(),
+                    $e->getLine()
+                );
+            } else {
+                $message = 'Unknown error';
+            }
+
+            $this->logger->critical($message);
+
+        });
+
         $that = $this;
 
         while (true) {
 
             while ($that->firedEvents->count() == 0) {
-                $that->logger->debug('DispatcherWorker::run wait');
+
+                $logger->debug('DispatcherWorker::run wait');
+
                 usleep(1000000);
             }
 
             $eventData = $that->firedEvents->pop();
 
-            $that->logger->debug('DispatcherWorker::run dequeue', [$eventData, $that->firedEvents->count()]);
-            $that->logger->debug('DispatcherWorker::run listeners', [$that->listeners]);
+            $logger->debug('DispatcherWorker::run dequeue', [$eventData, $that->firedEvents->count()]);
+            $logger->debug('DispatcherWorker::run listeners', [$that->listeners]);
+
 
             $name = $eventData[0];
             $event = $eventData[1];
