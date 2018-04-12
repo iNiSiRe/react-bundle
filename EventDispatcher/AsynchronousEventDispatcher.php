@@ -88,6 +88,15 @@ class AsynchronousEventDispatcher
     {
         $worker = $this->getNextWorker();
 
+        if ($worker->isTerminated()) {
+
+            if ($this->logger) {
+                $this->logger->debug('DispatcherWorker::terminated -> start');
+            }
+
+            $worker->start();
+        }
+
         $worker->synchronized(function ($worker, $name, $event) {
 
             $worker->addFiredEvent($name, $event);
