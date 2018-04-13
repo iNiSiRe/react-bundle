@@ -30,17 +30,17 @@ class AsynchronousEventDispatcher
     private $queueDistribution;
 
     /**
-     * @param string $kernelClass
-     * @param int    $maxWorkers
-     * @param int    $queueDistribution
+     * @param KernelFactoryInterface $kernelFactory
+     * @param int                    $maxWorkers
+     * @param int                    $queueDistribution
      */
-    public function __construct($kernelClass, $maxWorkers = 1, $queueDistribution = self::STRATEGY_ROUND_ROBIN)
+    public function __construct(KernelFactoryInterface $kernelFactory, $maxWorkers = 1, $queueDistribution = self::STRATEGY_ROUND_ROBIN)
     {
         $this->maxWorkers = $maxWorkers;
         $this->queueDistribution = $queueDistribution;
 
         for ($i = 0; $i < $maxWorkers; $i++) {
-            $this->workers[] = new DispatcherWorker($kernelClass);
+            $this->workers[] = new DispatcherWorker($i+1, $kernelFactory);
         }
 
         reset($this->workers);
@@ -137,5 +137,26 @@ class AsynchronousEventDispatcher
         }
 
         reset($this->workers);
+    }
+
+    /**
+     * @return array
+     */
+    public function getStatus()
+    {
+        $status = [];
+
+        foreach ($this->workers as $worker) {
+            $status[] = [
+                'running' => $worker->isRunning(),
+                'terminated' => $worker->isTerminated(),
+                'waited' => $worker->isWaiting(),
+                'started' => $worker->isStarted()
+            ];
+        }
+
+        reset($this->workers);
+
+        return $status;
     }
 }

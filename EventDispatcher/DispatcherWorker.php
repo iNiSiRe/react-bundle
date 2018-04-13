@@ -2,7 +2,6 @@
 
 namespace inisire\ReactBundle\EventDispatcher;
 
-use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 
 class DispatcherWorker extends \Thread
@@ -18,20 +17,27 @@ class DispatcherWorker extends \Thread
     public $listeners;
 
     /**
-     * @var string
+     * @var KernelFactoryInterface
      */
-    private $kernelClass;
+    private $kernelFactory;
+
+    /**
+     * @var int
+     */
+    private $number;
 
     /**
      * DispatcherWorker constructor.
      *
-     * @param string          $kernelClass
+     * @param int                    $number
+     * @param KernelFactoryInterface $kernelFactory
      */
-    public function __construct($kernelClass)
+    public function __construct(int $number, KernelFactoryInterface $kernelFactory)
     {
-        $this->kernelClass = $kernelClass;
+        $this->kernelFactory = $kernelFactory;
         $this->firedEvents = new \Volatile();
         $this->listeners = new ListenerPool();
+        $this->number = $number;
     }
 
     /**
@@ -52,14 +58,15 @@ class DispatcherWorker extends \Thread
         $this->firedEvents[] = [$name, $event];
     }
 
-    /**
+    /**$kernelClass
      * Run thread
      */
     public function run()
     {
         require_once __DIR__ . '/../../../autoload.php';
 
-        $kernel = new $this->kernelClass('dev', false);
+        $kernel = $this->kernelFactory->create();
+        $kernel->setThreadNumber($this->number);
         $kernel->boot();
 
         $logger = $kernel->getContainer()->get('logger');
@@ -81,7 +88,7 @@ class DispatcherWorker extends \Thread
                 $message = 'Unknown error';
             }
 
-            $this->logger->critical($message);
+            $logger->critical($message);
 
         });
 
