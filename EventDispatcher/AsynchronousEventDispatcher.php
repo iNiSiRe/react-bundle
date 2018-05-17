@@ -30,18 +30,17 @@ class AsynchronousEventDispatcher
     private $queueDistribution;
 
     /**
-     * @param string $kernelClass
-     * @param int $maxWorkers
-     * @param int $queueDistribution
-     * @param array $workerKernelParameters
+     * @param KernelFactoryInterface $kernelFactory
+     * @param int                    $maxWorkers
+     * @param int                    $queueDistribution * @param array $workerKernelParameters
      */
-    public function __construct($kernelClass, $maxWorkers = 1, $queueDistribution = self::STRATEGY_ROUND_ROBIN, $workerKernelParameters = [])
+    public function __construct(KernelFactoryInterface $kernelFactory, $maxWorkers = 1, $queueDistribution = self::STRATEGY_ROUND_ROBIN)
     {
         $this->maxWorkers = $maxWorkers;
         $this->queueDistribution = $queueDistribution;
 
         for ($i = 0; $i < $maxWorkers; $i++) {
-            $this->workers[] = new DispatcherWorker($kernelClass, $workerKernelParameters[$i] ?? []);
+            $this->workers[] = new DispatcherWorker($i + 1, $kernelFactory);
         }
 
         reset($this->workers);
@@ -80,7 +79,7 @@ class AsynchronousEventDispatcher
     }
 
     /**
-     * @param string $name
+     * @param string     $name
      * @param Event|null $event
      *
      * @throws \Exception
@@ -106,7 +105,7 @@ class AsynchronousEventDispatcher
     }
 
     /**
-     * @param string $event
+     * @param string   $event
      * @param callable $listener
      *
      * @throws \Exception
@@ -138,5 +137,26 @@ class AsynchronousEventDispatcher
         }
 
         reset($this->workers);
+    }
+
+    /**
+     * @return array
+     */
+    public function getStatus()
+    {
+        $status = [];
+
+        foreach ($this->workers as $worker) {
+            $status[] = [
+                'running' => $worker->isRunning(),
+                'terminated' => $worker->isTerminated(),
+                'waited' => $worker->isWaiting(),
+                'started' => $worker->isStarted()
+            ];
+        }
+
+        reset($this->workers);
+
+        return $status;
     }
 }
