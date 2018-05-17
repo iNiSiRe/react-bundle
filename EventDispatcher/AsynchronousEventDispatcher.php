@@ -31,16 +31,17 @@ class AsynchronousEventDispatcher
 
     /**
      * @param string $kernelClass
-     * @param int    $maxWorkers
-     * @param int    $queueDistribution
+     * @param int $maxWorkers
+     * @param int $queueDistribution
+     * @param array $workerKernelParameters
      */
-    public function __construct($kernelClass, $maxWorkers = 1, $queueDistribution = self::STRATEGY_ROUND_ROBIN)
+    public function __construct($kernelClass, $maxWorkers = 1, $queueDistribution = self::STRATEGY_ROUND_ROBIN, $workerKernelParameters = [])
     {
         $this->maxWorkers = $maxWorkers;
         $this->queueDistribution = $queueDistribution;
 
         for ($i = 0; $i < $maxWorkers; $i++) {
-            $this->workers[] = new DispatcherWorker($kernelClass);
+            $this->workers[] = new DispatcherWorker($kernelClass, $workerKernelParameters[$i] ?? []);
         }
 
         reset($this->workers);

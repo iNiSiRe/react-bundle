@@ -4,6 +4,7 @@ namespace inisire\ReactBundle\EventDispatcher;
 
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
+use Symfony\Component\HttpKernel\Kernel;
 
 class DispatcherWorker extends \Thread
 {
@@ -23,15 +24,22 @@ class DispatcherWorker extends \Thread
     private $kernelClass;
 
     /**
+     * @var array
+     */
+    private $kernelParameters;
+
+    /**
      * DispatcherWorker constructor.
      *
-     * @param string          $kernelClass
+     * @param string $kernelClass
+     * @param array $kernelParameters
      */
-    public function __construct($kernelClass)
+    public function __construct($kernelClass, $kernelParameters = [])
     {
         $this->kernelClass = $kernelClass;
         $this->firedEvents = new \Volatile();
         $this->listeners = new ListenerPool();
+        $this->kernelParameters = $kernelParameters;
     }
 
     /**
@@ -59,7 +67,9 @@ class DispatcherWorker extends \Thread
     {
         require_once __DIR__ . '/../../../autoload.php';
 
+        /** @var Kernel $kernel */
         $kernel = new $this->kernelClass('dev', false);
+
         $kernel->boot();
 
         $logger = $kernel->getContainer()->get('logger');
@@ -81,9 +91,14 @@ class DispatcherWorker extends \Thread
                 $message = 'Unknown error';
             }
 
-            $this->logger->critical($message);
+            $logger->critical($message);
 
         });
+
+        // Set thread-oriented kernel parameters
+        foreach ($this->kernelParameters as $name => $value) {
+            $kernel->getContainer()->setParameter($name, $value);
+        }
 
         $that = $this;
 
