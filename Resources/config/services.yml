@@ -28,3 +28,6 @@ services:
           - "@diactoris.factory"
           - "@monolog.logger"
 
+    a:
+      class: inisire\ReactBundle\EventDispatcher\AsynchronousEventDispatcher
+

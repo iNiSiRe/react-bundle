@@ -2,6 +2,7 @@
 
 namespace inisire\ReactBundle\EventDispatcher;
 
+use inisire\ReactBundle\EventDispatcher\Listener\EventListener;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\Event;
 
@@ -84,7 +85,7 @@ class AsynchronousEventDispatcher
      *
      * @throws \Exception
      */
-    public function dispatch($name, Event $event = null)
+    public function dispatch($name, $event = null)
     {
         $worker = $this->getNextWorker();
 
@@ -99,6 +100,9 @@ class AsynchronousEventDispatcher
 
         $worker->synchronized(function ($worker, $name, $event) {
 
+            /**
+             * @var DispatcherWorker $worker
+             */
             $worker->addFiredEvent($name, $event);
 
         }, $worker, $name, $event);
@@ -123,6 +127,18 @@ class AsynchronousEventDispatcher
         }
 
         reset($this->workers);
+    }
+
+    /**
+     * @param iterable|EventListener[] $listeners
+     *
+     * @throws \Exception
+     */
+    public function addListeners(iterable $listeners)
+    {
+        foreach ($listeners as $listener) {
+            $this->addListener($listener->getEvent(), [$listener, 'onEvent']);
+        }
     }
 
     /**
