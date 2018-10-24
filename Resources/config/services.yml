@@ -2,14 +2,17 @@ services:
 
     React\EventLoop\Factory: ~
 
-    react.loop:
-        public: true
+    React\EventLoop\LoopInterface: ~
         class: React\EventLoop\LoopInterface
-        factory: 'React\EventLoop\Factory:create'
+        factory: ['@React\EventLoop\Factory', 'create']
+
+    react.loop:
+        alias: React\EventLoop\LoopInterface
+        public: true
 
     react.socket.server:
         class: React\Socket\Server
-        arguments: ["0.0.0.0:8080", "@react.loop"]
+        arguments: ["0.0.0.0:8080", '@react.loop']
 
     http_foundation.factory:
         class: Symfony\Bridge\PsrHttpMessage\Factory\HttpFoundationFactory
@@ -28,8 +31,20 @@ services:
           - "@diactoris.factory"
           - "@monolog.logger"
 
-    async.listeners_collection:
-      class: inisire\ReactBundle\EventDispatcher\ListenerStorage
-      arguments: [!tagged async.event_listener]
-      public: true
+    inisire\ReactBundle\Threaded\WorkerPoolFactory:
+        class: inisire\ReactBundle\Threaded\WorkerPoolFactory
+        arguments: ['%kernel.project_dir%/vendor/autoload.php', '@inisire\ReactBundle\Threaded\KernelFactoryInterface']
+
+    inisire\ReactBundle\Threaded\MonitoredPool:
+        class: inisire\ReactBundle\Threaded\MonitoredPool
+        factory: ['@inisire\ReactBundle\Threaded\WorkerPoolFactory', "create"]
+
+    worker.pool:
+        public: true
+        alias: inisire\ReactBundle\Threaded\MonitoredPool
+
+    inisire\ReactBundle\Threaded\PoolMonitor:
+        class: inisire\ReactBundle\Threaded\PoolMonitor
+        public: true
+        arguments: ['@React\EventLoop\LoopInterface', '@inisire\ReactBundle\Threaded\MonitoredPool', '@Psr\Log\LoggerInterface']
 

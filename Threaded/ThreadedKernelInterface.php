@@ -1,6 +1,6 @@
 <?php
 
-namespace inisire\ReactBundle\EventDispatcher;
+namespace inisire\ReactBundle\Threaded;
 
 interface ThreadedKernelInterface
 {

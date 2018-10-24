@@ -3,8 +3,6 @@
 
 namespace inisire\ReactBundle\Threaded;
 
-
-use inisire\ReactBundle\EventDispatcher\KernelFactoryInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
 
 class Kernel

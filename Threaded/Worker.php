@@ -1,10 +1,6 @@
 <?php
 
-
 namespace inisire\ReactBundle\Threaded;
-
-
-use inisire\ReactBundle\EventDispatcher\KernelFactoryInterface;
 
 class Worker extends \Worker
 {
@@ -30,15 +26,24 @@ class Worker extends \Worker
 
     public function run()
     {
-        set_error_handler(function (int $errno , string $errstr, string $errfile, int $errline, array $errcontext) {
+        set_error_handler(function (int $errno , string $errstr, string $errfile, int $errline, array $errcontext = null) {
 
-            syslog(LOG_ERR, sprintf('Uncaught exception %s with message "%s" at %s:%s', $errno, $errstr, $errfile, $errline));
+            $message = sprintf('Uncaught exception %s with message "%s" at %s:%s', $errno, $errstr, $errfile, $errline);
+            echo $message . PHP_EOL;
+            syslog(LOG_ERR, $message);
 
         }, E_ALL);
 
         register_shutdown_function(function () {});
 
-        set_exception_handler(function ($e) {
+        require_once($this->loader);
+
+        $kernel = Kernel::create($this->kernelFactory);
+        $kernel->boot();
+
+        $logger = $kernel->getContainer()->get('logger');
+
+        set_exception_handler(function ($e) use ($logger) {
 
             if ($e instanceof \Throwable) {
                 $message = sprintf(
@@ -52,13 +57,10 @@ class Worker extends \Worker
                 $message = 'Unknown error';
             }
 
-            syslog(LOG_ERR, $message);
+            $logger->critical($message);
         });
 
-        require_once($this->loader);
-
-        $kernel = Kernel::create($this->kernelFactory);
-        $kernel->boot();
+        $logger->debug('Worker started');
     }
 
     public function start(int $options = PTHREADS_INHERIT_ALL)

@@ -1,6 +1,6 @@
 <?php
 
-namespace inisire\ReactBundle\EventDispatcher;
+namespace inisire\ReactBundle\Threaded;
 
 use Symfony\Component\HttpKernel\KernelInterface;
 
