@@ -28,6 +28,8 @@ services:
           - "@diactoris.factory"
           - "@monolog.logger"
 
-    a:
-      class: inisire\ReactBundle\EventDispatcher\AsynchronousEventDispatcher
+    async.listeners_collection:
+      class: inisire\ReactBundle\EventDispatcher\ListenerStorage
+      arguments: [!tagged async.event_listener]
+      public: true
 

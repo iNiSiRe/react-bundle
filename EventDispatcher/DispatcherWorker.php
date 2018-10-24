@@ -2,7 +2,9 @@
 
 namespace inisire\ReactBundle\EventDispatcher;
 
+use inisire\ReactBundle\EventDispatcher\Listener\EventListener;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
+use Symfony\Component\DependencyInjection\TaggedContainerInterface;
 use Symfony\Component\HttpKernel\Kernel;
 
 class DispatcherWorker extends \Thread
@@ -15,7 +17,7 @@ class DispatcherWorker extends \Thread
     /**
      * @var \Threaded
      */
-    public $listeners;
+    private $listeners;
 
     /**
      * @var KernelFactoryInterface
@@ -30,7 +32,7 @@ class DispatcherWorker extends \Thread
     /**
      * @var array
      */
-    private $kernelParameters;
+    private $kernelParameters = [];
 
     /**
      * DispatcherWorker constructor.
@@ -64,8 +66,10 @@ class DispatcherWorker extends \Thread
         $this->firedEvents[] = [$name, $event];
     }
 
-    /**$kernelClass
+    /**
      * Run thread
+     *
+     * @throws \Exception
      */
     public function run()
     {
@@ -75,9 +79,21 @@ class DispatcherWorker extends \Thread
         $kernel->setThreadNumber($this->number);
         $kernel->boot();
 
-        $logger = $kernel->getContainer()->get('logger');
+        $container = $kernel->getContainer();
+        $logger = $container->get('logger');
 
-        set_error_handler(function () {}, E_ALL);
+        set_error_handler(function (int $errno , string $errstr, string $errfile, int $errline, array $errcontext) {
+
+            echo sprintf(
+                'Uncaught exception %s with message "%s" at %s:%s',
+                $errno,
+                $errstr,
+                $errfile,
+                $errline
+            );
+
+        }, E_ALL);
+
         register_shutdown_function(function () {});
 
         set_exception_handler(function ($e) use ($logger) {
@@ -98,9 +114,13 @@ class DispatcherWorker extends \Thread
 
         });
 
+        $this->listeners->addListeners($container->get('async.listeners_collection')->getListeners());
+
+        var_dump(array_keys($this->listeners->getAll()));
+
         // Set thread-oriented kernel parameters
         foreach ($this->kernelParameters as $name => $value) {
-            $kernel->getContainer()->setParameter($name, $value);
+            $container->setParameter($name, $value);
         }
 
         $that = $this;
@@ -117,13 +137,14 @@ class DispatcherWorker extends \Thread
             $eventData = $that->firedEvents->pop();
 
             $logger->debug('DispatcherWorker::run dequeue', [$eventData, $that->firedEvents->count()]);
-            $logger->debug('DispatcherWorker::run listeners', [$that->listeners]);
-
+            $logger->debug('DispatcherWorker::run listeners', ['count' => count($that->listeners)]);
 
             $name = $eventData[0];
             $event = $eventData[1];
 
             $listeners = $that->listeners->getListeners($name);
+
+            $logger->debug('DispatcherWorker::run listeners', [count($listeners)]);
 
             if (empty($listeners)) {
                 continue;
@@ -132,7 +153,7 @@ class DispatcherWorker extends \Thread
             list($listener, $method) = $listeners[0];
 
             if ($listener instanceof ContainerAwareInterface) {
-                $listener->setContainer($kernel->getContainer());
+                $listener->setContainer($container);
             }
 
             call_user_func([$listener, $method], $event);

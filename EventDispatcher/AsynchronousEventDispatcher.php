@@ -130,18 +130,6 @@ class AsynchronousEventDispatcher
     }
 
     /**
-     * @param iterable|EventListener[] $listeners
-     *
-     * @throws \Exception
-     */
-    public function addListeners(iterable $listeners)
-    {
-        foreach ($listeners as $listener) {
-            $this->addListener($listener->getEvent(), [$listener, 'onEvent']);
-        }
-    }
-
-    /**
      * Run worker
      */
     public function start()
