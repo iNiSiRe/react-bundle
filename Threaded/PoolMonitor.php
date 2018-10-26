@@ -30,7 +30,11 @@ class PoolMonitor
 
         $logger->debug('monitor started');
 
-        $this->loop->addPeriodicTimer(60, [$this, 'monitor']);
+        $this->loop->addPeriodicTimer(60, function () {
+
+            $this->monitor();
+
+        });
     }
 
     /**

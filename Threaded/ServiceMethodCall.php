@@ -4,7 +4,7 @@
 namespace inisire\ReactBundle\Threaded;
 
 
-class ExecuteServiceMethodTask extends \Threaded
+class ServiceMethodCall extends \Threaded
 {
     /**
      * @var string
@@ -53,7 +53,7 @@ class ExecuteServiceMethodTask extends \Threaded
         }
 
         if (method_exists($service, $this->method)) {
-            call_user_func([$service, $this->method], $this->arguments);
+            call_user_func_array([$service, $this->method], $this->arguments);
         } else {
             throw new \RuntimeException(sprintf('Method "%s" not exists in service "%s"', $this->method, $this->service));
         }

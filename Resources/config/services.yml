@@ -2,7 +2,7 @@ services:
 
     React\EventLoop\Factory: ~
 
-    React\EventLoop\LoopInterface: ~
+    React\EventLoop\LoopInterface:
         class: React\EventLoop\LoopInterface
         factory: ['@React\EventLoop\Factory', 'create']
 

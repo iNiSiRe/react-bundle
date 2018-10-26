@@ -34,11 +34,33 @@ class Worker extends \Worker
 
         }, E_ALL);
 
+        set_exception_handler(function ($e) {
+
+            if ($e instanceof \Throwable) {
+                $message = sprintf(
+                    'Uncaught exception %s with message "%s" at %s:%s',
+                    get_class($e),
+                    $e->getMessage(),
+                    $e->getFile(),
+                    $e->getLine()
+                );
+            } else {
+                $message = 'Unknown error';
+            }
+
+            echo $message . PHP_EOL;
+        });
+
         register_shutdown_function(function () {});
 
         require_once($this->loader);
 
         $kernel = Kernel::create($this->kernelFactory);
+
+        if ($kernel instanceof ThreadedKernelInterface) {
+            $kernel->setThreadNumber($this->getThreadId());
+        }
+
         $kernel->boot();
 
         $logger = $kernel->getContainer()->get('logger');
