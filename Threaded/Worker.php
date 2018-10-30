@@ -2,6 +2,8 @@
 
 namespace inisire\ReactBundle\Threaded;
 
+use Symfony\Component\HttpKernel\KernelInterface;
+
 class Worker extends \Worker
 {
     /**
@@ -22,6 +24,12 @@ class Worker extends \Worker
     {
         $this->loader = $loader;
         $this->kernelFactory = $kernelFactory;
+    }
+
+    private function boot()
+    {
+        $GLOBALS['kernel'] = $this->kernelFactory->create();
+        $GLOBALS['kernel']->boot();
     }
 
     public function run()
@@ -51,14 +59,11 @@ class Worker extends \Worker
             echo $message . PHP_EOL;
         });
 
-        register_shutdown_function(function () {});
-
         require_once($this->loader);
 
-        $kernel = Kernel::create($this->kernelFactory);
-        $kernel->boot();
+        $this->boot();
 
-        $logger = $kernel->getContainer()->get('logger');
+        $logger = $this->getKernel()->getContainer()->get('logger');
 
         set_exception_handler(function ($e) use ($logger) {
 
@@ -83,5 +88,26 @@ class Worker extends \Worker
     public function start(int $options = PTHREADS_INHERIT_ALL)
     {
         return parent::start(PTHREADS_INHERIT_NONE);
+    }
+
+    /**
+     * @return bool
+     */
+    public function shutdown()
+    {
+        if ($this->getKernel()) {
+            $this->getKernel()->shutdown();
+            $GLOBALS['kernel'] = null;
+        }
+
+        return parent::shutdown();
+    }
+
+    /**
+     * @return KernelInterface
+     */
+    public function getKernel()
+    {
+        return $GLOBALS['kernel'];
     }
 }

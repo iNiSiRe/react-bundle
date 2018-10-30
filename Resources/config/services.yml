@@ -1,3 +1,6 @@
+parameters:
+  pool.workers: 2
+
 services:
 
     React\EventLoop\Factory: ~
@@ -33,18 +36,21 @@ services:
 
     inisire\ReactBundle\Threaded\WorkerPoolFactory:
         class: inisire\ReactBundle\Threaded\WorkerPoolFactory
-        arguments: ['%kernel.project_dir%/vendor/autoload.php', '@inisire\ReactBundle\Threaded\KernelFactoryInterface']
+        arguments:
+          - '%kernel.project_dir%/vendor/autoload.php'
+          - '@inisire\ReactBundle\Threaded\KernelFactoryInterface'
+          - '%pool.workers%'
 
-    inisire\ReactBundle\Threaded\MonitoredPool:
-        class: inisire\ReactBundle\Threaded\MonitoredPool
+    inisire\ReactBundle\Threaded\Pool:
+        class: inisire\ReactBundle\Threaded\Pool
+        shared: true
         factory: ['@inisire\ReactBundle\Threaded\WorkerPoolFactory', "create"]
+        calls:
+          - [setLogger, ['@Psr\Log\LoggerInterface']]
+          - [setLoop, ['@react.loop']]
 
     worker.pool:
         public: true
-        alias: inisire\ReactBundle\Threaded\MonitoredPool
-
-    inisire\ReactBundle\Threaded\PoolMonitor:
-        class: inisire\ReactBundle\Threaded\PoolMonitor
-        public: true
-        arguments: ['@React\EventLoop\LoopInterface', '@inisire\ReactBundle\Threaded\MonitoredPool', '@Psr\Log\LoggerInterface']
+        alias: inisire\ReactBundle\Threaded\Pool
+        shared: true
 
