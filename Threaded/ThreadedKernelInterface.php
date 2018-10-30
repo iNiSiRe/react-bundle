@@ -4,9 +4,9 @@ namespace inisire\ReactBundle\Threaded;
 
 interface ThreadedKernelInterface
 {
-    const MAIN_THREAD = 0;
+    const MAIN_THREAD = -1;
 
-    public function setThreadNumber(int $number);
+    public function setThreadNumber($number);
 
     public function getThreadNumber();
 }

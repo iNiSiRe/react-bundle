@@ -17,7 +17,7 @@ class ServiceMethodCall extends \Threaded
     private $method;
 
     /**
-     * @var array
+     * @var \Volatile
      */
     private $arguments;
 
@@ -30,7 +30,7 @@ class ServiceMethodCall extends \Threaded
     {
         $this->service = $service;
         $this->method = $method;
-        $this->arguments = $arguments;
+        $this->arguments = serialize($arguments);
     }
 
     /**
@@ -53,7 +53,8 @@ class ServiceMethodCall extends \Threaded
         }
 
         if (method_exists($service, $this->method)) {
-            call_user_func_array([$service, $this->method], $this->arguments);
+            $arguments = unserialize($this->arguments);
+            call_user_func_array([$service, $this->method], $arguments);
         } else {
             throw new \RuntimeException(sprintf('Method "%s" not exists in service "%s"', $this->method, $this->service));
         }

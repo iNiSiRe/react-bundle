@@ -56,11 +56,6 @@ class Worker extends \Worker
         require_once($this->loader);
 
         $kernel = Kernel::create($this->kernelFactory);
-
-        if ($kernel instanceof ThreadedKernelInterface) {
-            $kernel->setThreadNumber($this->getThreadId());
-        }
-
         $kernel->boot();
 
         $logger = $kernel->getContainer()->get('logger');
