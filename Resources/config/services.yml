@@ -32,7 +32,7 @@ services:
           - "@kernel"
           - "@http_foundation.factory"
           - "@diactoris.factory"
-          - "@monolog.logger"
+          - "@logger"
 
     inisire\ReactBundle\Threaded\WorkerPoolFactory:
         class: inisire\ReactBundle\Threaded\WorkerPoolFactory
@@ -52,5 +52,4 @@ services:
     worker.pool:
         public: true
         alias: inisire\ReactBundle\Threaded\Pool
-        shared: true
 
