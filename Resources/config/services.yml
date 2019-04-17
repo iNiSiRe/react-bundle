@@ -1,5 +1,6 @@
 parameters:
   pool.workers: 2
+  http_server.port: "8080"
 
 services:
 
@@ -13,9 +14,11 @@ services:
         alias: React\EventLoop\LoopInterface
         public: true
 
-    react.socket.server:
+    React\Socket\Server:
         class: React\Socket\Server
-        arguments: ["0.0.0.0:8080", '@react.loop']
+        arguments: ["0.0.0.0:%http_server.port%", '@react.loop']
+
+    react.socket.server: '@React\Socket\Server'
 
     http_foundation.factory:
         class: Symfony\Bridge\PsrHttpMessage\Factory\HttpFoundationFactory
@@ -23,7 +26,7 @@ services:
     diactoris.factory:
         class: Symfony\Bridge\PsrHttpMessage\Factory\DiactorosFactory
 
-    react.http.server:
+    inisire\ReactBundle\Server\Server:
         public: true
         class: inisire\ReactBundle\Server\Server
         arguments:
@@ -33,6 +36,8 @@ services:
           - "@http_foundation.factory"
           - "@diactoris.factory"
           - "@logger"
+
+    react.http.server: '@inisire\ReactBundle\Server\Server'
 
     inisire\ReactBundle\Threaded\WorkerPoolFactory:
         class: inisire\ReactBundle\Threaded\WorkerPoolFactory

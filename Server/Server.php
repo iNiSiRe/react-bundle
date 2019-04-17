@@ -3,9 +3,9 @@
 namespace inisire\ReactBundle\Server;
 
 use inisire\ReactBundle\Middleware\UploadedFilesProcessor;
-use Monolog\Logger;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Log\LoggerInterface;
 use React\EventLoop\LoopInterface;
 use React\Http\Io\MiddlewareRunner;
 use React\Http\Middleware\RequestBodyBufferMiddleware;
@@ -50,8 +50,9 @@ class Server
      * @var DiactorosFactory
      */
     private $diactorosFactory;
+
     /**
-     * @var Logger
+     * @var LoggerInterface
      */
     private $logger;
 
@@ -67,7 +68,7 @@ class Server
      */
     public function __construct(LoopInterface $loop, SocketServer $socketServer, HttpKernelInterface $kernel,
                                 HttpFoundationFactoryInterface $foundationFactory, DiactorosFactory $diactorosFactory,
-                                Logger $logger)
+                                LoggerInterface $logger)
     {
         $this->loop = $loop;
         $this->socketServer = $socketServer;
