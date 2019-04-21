@@ -147,6 +147,8 @@ class Server
             $sfRequest = $this->foundationFactory->createRequest($request);
             $sfResponse = $this->kernel->handle($sfRequest);
 
+            $sfResponse->headers->add(['Access-Control-Allow-Origin' => '*']);
+
             $response = $this->diactorosFactory->createResponse($sfResponse);
 
             $this->kernel->terminate($sfRequest, $sfResponse);
