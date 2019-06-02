@@ -39,22 +39,3 @@ services:
 
     react.http.server: '@inisire\ReactBundle\Server\Server'
 
-    inisire\ReactBundle\Threaded\WorkerPoolFactory:
-        class: inisire\ReactBundle\Threaded\WorkerPoolFactory
-        arguments:
-          - '%kernel.project_dir%/vendor/autoload.php'
-          - '@inisire\ReactBundle\Threaded\KernelFactoryInterface'
-          - '%pool.workers%'
-
-    inisire\ReactBundle\Threaded\Pool:
-        class: inisire\ReactBundle\Threaded\Pool
-        shared: true
-        factory: ['@inisire\ReactBundle\Threaded\WorkerPoolFactory', "create"]
-        calls:
-          - [setLogger, ['@Psr\Log\LoggerInterface']]
-          - [setLoop, ['@react.loop']]
-
-    worker.pool:
-        public: true
-        alias: inisire\ReactBundle\Threaded\Pool
-

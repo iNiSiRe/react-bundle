@@ -18,6 +18,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
+use Symfony\Component\HttpKernel\KernelInterface;
 
 class Server
 {
@@ -37,7 +38,7 @@ class Server
     private $httpServer;
 
     /**
-     * @var App\Kernel
+     * @var KernelInterface
      */
     private $kernel;
 
@@ -64,7 +65,7 @@ class Server
      * @param HttpKernelInterface            $kernel
      * @param HttpFoundationFactoryInterface $foundationFactory
      * @param DiactorosFactory               $diactorosFactory
-     * @param Logger                         $logger
+     * @param LoggerInterface                $logger
      */
     public function __construct(LoopInterface $loop, SocketServer $socketServer, HttpKernelInterface $kernel,
                                 HttpFoundationFactoryInterface $foundationFactory, DiactorosFactory $diactorosFactory,
@@ -74,8 +75,8 @@ class Server
         $this->socketServer = $socketServer;
 
         $this->httpServer = new HttpServer(new MiddlewareRunner([
-            new UploadedFilesProcessor($this->loop),
-            [$this, 'handleRequest']]
+                new UploadedFilesProcessor($this->loop),
+                [$this, 'handleRequest']]
         ));
 
         $this->kernel = $kernel;
@@ -144,20 +145,23 @@ class Server
     public function handleRequest(ServerRequestInterface $request, callable $next)
     {
         try {
+
             $sfRequest = $this->foundationFactory->createRequest($request);
             $sfResponse = $this->kernel->handle($sfRequest);
-
             $sfResponse->headers->add(['Access-Control-Allow-Origin' => '*']);
-
             $response = $this->diactorosFactory->createResponse($sfResponse);
-
             $this->kernel->terminate($sfRequest, $sfResponse);
+
         } catch (HttpException $exception) {
+
             $this->logRequestError($request, $exception);
 
             return new \React\Http\Response($exception->getStatusCode(), $exception->getHeaders(), $exception->getMessage());
+
         } catch (\Throwable $exception) {
+
             $this->logRequestError($request, $exception);
+
             return new \React\Http\Response(500, [], $exception->getMessage());
         }
 

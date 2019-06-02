@@ -3,10 +3,10 @@
 namespace inisire\ReactBundle\Controller;
 
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 
-class StatisticController extends Controller
+class StatisticController extends AbstractController
 {
     /**
      * @Route("/server/statistic")
