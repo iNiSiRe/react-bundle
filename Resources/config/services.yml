@@ -1,5 +1,4 @@
 parameters:
-  pool.workers: 2
   http_server.port: "8080"
 
 services:
@@ -27,7 +26,6 @@ services:
         class: Symfony\Bridge\PsrHttpMessage\Factory\DiactorosFactory
 
     inisire\ReactBundle\Server\Server:
-        public: true
         class: inisire\ReactBundle\Server\Server
         arguments:
           - "@react.loop"
@@ -37,5 +35,7 @@ services:
           - "@diactoris.factory"
           - "@logger"
 
-    react.http.server: '@inisire\ReactBundle\Server\Server'
+    react.http.server:
+        alias: inisire\ReactBundle\Server\Server
+        public: true
 

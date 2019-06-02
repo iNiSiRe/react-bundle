@@ -2,18 +2,18 @@
 
 namespace inisire\ReactBundle\Controller;
 
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\Routing\Annotation\Route;
 
-class StatisticController extends AbstractController
+class StatisticController
 {
     /**
-     * @Route("/server/statistic")
-     * @Method({"GET"})
+     * @Route(path="/server/statistic", methods={"GET"})
      */
-    public function indexAction()
+    public function memory()
     {
-        return $this->render('ReactBundle:Default:index.html.twig');
+        return new JsonResponse([
+            'memory_usage' => sprintf("%f", memory_get_usage(true) / 1024 / 1024)
+        ]);
     }
 }
