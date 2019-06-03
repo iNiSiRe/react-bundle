@@ -8,7 +8,7 @@ $loader = require __DIR__ . '/../../../../vendor/autoload.php';
 
 $environment = $_ENV['SYMFONY_ENV'] ?? $_ENV['APP_ENV'] ?? 'dev';
 
-$kernel = new Kernel($environment, $environment == 'dev');
+$kernel = new Kernel($environment, false);
 $kernel->boot();
 
 $container = $kernel->getContainer();
@@ -18,5 +18,14 @@ $loop = $container->get('react.loop');
 
 $event = new LoopRunEvent($loop);
 $container->get('event_dispatcher')->dispatch(Events::LOOP_RUN, $event);
+
+$loop->addPeriodicTimer(5, function () {
+
+    // Cleanup memory
+    gc_collect_cycles();
+
+});
+
+echo 'Ready to accept connections.' . PHP_EOL;
 
 $loop->run();
