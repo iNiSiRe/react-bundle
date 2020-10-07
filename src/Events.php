@@ -1,6 +1,6 @@
 <?php
 
-namespace inisire\ReactBundle\Event;
+namespace inisire\ReactBundle;
 
 class Events
 {

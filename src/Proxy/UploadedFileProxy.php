@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: user18
- * Date: 05.10.17
- * Time: 19:22
- */
 
 namespace inisire\ReactBundle\Proxy;
 

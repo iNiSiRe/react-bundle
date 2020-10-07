@@ -10,8 +10,8 @@ use React\EventLoop\LoopInterface;
 use React\Http\Io\MiddlewareRunner;
 use React\Http\Middleware\RequestBodyBufferMiddleware;
 use React\Http\Middleware\RequestBodyParserMiddleware;
-use React\Http\Server as HttpServer;
-use React\Socket\Server as SocketServer;
+use React\Http\Server as ReactHttpServer;
+use React\Socket\Server as ReactSocketServer;
 use Symfony\Bridge\PsrHttpMessage\Factory\DiactorosFactory;
 use Symfony\Bridge\PsrHttpMessage\HttpFoundationFactoryInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,7 +20,7 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
 
-class Server
+class HttpServer
 {
     /**
      * @var LoopInterface
@@ -28,12 +28,12 @@ class Server
     private $loop;
 
     /**
-     * @var SocketServer
+     * @var ReactSocketServer
      */
     private $socketServer;
 
     /**
-     * @var HttpServer
+     * @var ReactHttpServer
      */
     private $httpServer;
 
@@ -48,11 +48,6 @@ class Server
     private $foundationFactory;
 
     /**
-     * @var DiactorosFactory
-     */
-    private $diactorosFactory;
-
-    /**
      * @var LoggerInterface
      */
     private $logger;
@@ -61,27 +56,27 @@ class Server
      * Server constructor.
      *
      * @param LoopInterface                  $loop
-     * @param SocketServer                   $socketServer
+     * @param ReactSocketServer              $socketServer
      * @param HttpKernelInterface            $kernel
      * @param HttpFoundationFactoryInterface $foundationFactory
-     * @param DiactorosFactory               $diactorosFactory
      * @param LoggerInterface                $logger
      */
-    public function __construct(LoopInterface $loop, SocketServer $socketServer, HttpKernelInterface $kernel,
-                                HttpFoundationFactoryInterface $foundationFactory, DiactorosFactory $diactorosFactory,
-                                LoggerInterface $logger)
+    public function __construct(LoopInterface $loop, ReactSocketServer $socketServer, HttpKernelInterface $kernel,
+                                HttpFoundationFactoryInterface $foundationFactory, LoggerInterface $logger)
     {
         $this->loop = $loop;
         $this->socketServer = $socketServer;
 
-        $this->httpServer = new HttpServer(new MiddlewareRunner([
+        $this->httpServer = new ReactHttpServer(
+            $loop,
+            new MiddlewareRunner([
                 new UploadedFilesProcessor($this->loop),
-                [$this, 'handleRequest']]
+                [$this, 'handleRequest']
+            ]
         ));
 
         $this->kernel = $kernel;
         $this->foundationFactory = $foundationFactory;
-        $this->diactorosFactory = $diactorosFactory;
         $this->logger = $logger;
     }
 
@@ -149,7 +144,7 @@ class Server
             $sfRequest = $this->foundationFactory->createRequest($request);
             $sfResponse = $this->kernel->handle($sfRequest);
             $sfResponse->headers->add(['Access-Control-Allow-Origin' => '*']);
-            $response = $this->diactorosFactory->createResponse($sfResponse);
+            $response = $this->foundationFactory->createResponse($sfResponse);
             $this->kernel->terminate($sfRequest, $sfResponse);
 
         } catch (HttpException $exception) {

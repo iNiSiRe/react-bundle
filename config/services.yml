@@ -1,0 +1,30 @@
+parameters:
+  http_server.port: "8080"
+
+services:
+  _defaults:
+    public: false
+    autowire: true
+    autoconfigure: true
+
+  inisire\ReactBundle\:
+    resource: '../src/*'
+    exclude: '../src/{DependencyInjection,Entity,Migrations,Tests,Kernel.php}'
+
+  # Additional definitions
+  React\EventLoop\Factory: ~
+  Symfony\Bridge\PsrHttpMessage\Factory\HttpFoundationFactory: ~
+  Symfony\Bridge\PsrHttpMessage\Factory\DiactorosFactory: ~
+  inisire\ReactBundle\Server\HttpServer: ~
+
+  React\EventLoop\LoopInterface:
+    factory: ['@React\EventLoop\Factory', 'create']
+
+  React\Socket\Server:
+    arguments:
+      $uri: "0.0.0.0:%http_server.port%"
+
+  # Aliases
+  Symfony\Bridge\PsrHttpMessage\HttpFoundationFactoryInterface:
+    alias: Symfony\Bridge\PsrHttpMessage\Factory\HttpFoundationFactory
+
