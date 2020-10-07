@@ -9,9 +9,8 @@
         }
     },
     "require": {
-        "php": ">=7.0.0",
+        "php": ">=7.1.3",
         "react/http": ">=0.8.0",
-        "symfony/psr-http-message-bridge": "^1.0",
-        "zendframework/zend-diactoros": "^1.7"
+        "symfony/psr-http-message-bridge": "^1.0"
     }
 }
