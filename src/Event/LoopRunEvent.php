@@ -3,7 +3,7 @@
 namespace inisire\ReactBundle\Event;
 
 use React\EventLoop\LoopInterface;
-use Symfony\Component\EventDispatcher\Event;
+use Symfony\Contracts\EventDispatcher\Event;
 
 class LoopRunEvent extends Event
 {

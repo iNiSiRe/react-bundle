@@ -2,11 +2,13 @@
 
 namespace inisire\ReactBundle\Command;
 
+use inisire\ReactBundle\Event\LoopRunEvent;
 use inisire\ReactBundle\Server\HttpServer;
 use React\EventLoop\LoopInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class HttpServerStartCommand extends Command
 {
@@ -21,15 +23,23 @@ class HttpServerStartCommand extends Command
     private $loop;
 
     /**
-     * @param string|null   $name
-     * @param HttpServer    $server
-     * @param LoopInterface $loop
+     * @var EventDispatcherInterface
      */
-    public function __construct(string $name = null, HttpServer $server, LoopInterface $loop)
+    private $dispatcher;
+
+    /**
+     * @param string|null              $name
+     * @param HttpServer               $server
+     * @param LoopInterface            $loop
+     * @param EventDispatcherInterface $dispatcher
+     */
+    public function __construct(string $name = null, HttpServer $server, LoopInterface $loop,
+                                EventDispatcherInterface $dispatcher)
     {
         parent::__construct($name);
         $this->server = $server;
         $this->loop = $loop;
+        $this->dispatcher = $dispatcher;
     }
 
     protected function configure()
@@ -40,6 +50,19 @@ class HttpServerStartCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $this->server->start();
+
+        $this->loop->addSignal(SIGINT, function ($signal) {
+            $this->loop->stop();
+        });
+
+        $this->loop->addSignal(SIGTERM, function ($signal) {
+            $this->loop->stop();
+        });
+
+        $this->dispatcher->dispatch(new LoopRunEvent($this->loop));
+
         $this->loop->run();
+
+        return 0;
     }
 }
