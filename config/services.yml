@@ -14,7 +14,7 @@ services:
   # Additional definitions
   React\EventLoop\Factory: ~
   Symfony\Bridge\PsrHttpMessage\Factory\HttpFoundationFactory: ~
-  Symfony\Bridge\PsrHttpMessage\Factory\DiactorosFactory: ~
+  Symfony\Bridge\PsrHttpMessage\Factory\PsrHttpFactory: ~
   inisire\ReactBundle\Server\HttpServer: ~
 
   React\EventLoop\LoopInterface:
@@ -27,4 +27,7 @@ services:
   # Aliases
   Symfony\Bridge\PsrHttpMessage\HttpFoundationFactoryInterface:
     alias: Symfony\Bridge\PsrHttpMessage\Factory\HttpFoundationFactory
+
+  Symfony\Bridge\PsrHttpMessage\HttpMessageFactoryInterface:
+    alias: Symfony\Bridge\PsrHttpMessage\Factory\PsrHttpFactory
 

@@ -14,6 +14,7 @@ use React\Http\Server as ReactHttpServer;
 use React\Socket\Server as ReactSocketServer;
 use Symfony\Bridge\PsrHttpMessage\Factory\DiactorosFactory;
 use Symfony\Bridge\PsrHttpMessage\HttpFoundationFactoryInterface;
+use Symfony\Bridge\PsrHttpMessage\HttpMessageFactoryInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -48,6 +49,11 @@ class HttpServer
     private $foundationFactory;
 
     /**
+     * @var HttpMessageFactoryInterface
+     */
+    private $httpMessageFactory;
+
+    /**
      * @var LoggerInterface
      */
     private $logger;
@@ -59,10 +65,12 @@ class HttpServer
      * @param ReactSocketServer              $socketServer
      * @param HttpKernelInterface            $kernel
      * @param HttpFoundationFactoryInterface $foundationFactory
+     * @param HttpMessageFactoryInterface    $httpMessageFactory
      * @param LoggerInterface                $logger
      */
     public function __construct(LoopInterface $loop, ReactSocketServer $socketServer, HttpKernelInterface $kernel,
-                                HttpFoundationFactoryInterface $foundationFactory, LoggerInterface $logger)
+                                HttpFoundationFactoryInterface $foundationFactory, HttpMessageFactoryInterface $httpMessageFactory,
+                                LoggerInterface $logger)
     {
         $this->loop = $loop;
         $this->socketServer = $socketServer;
@@ -77,6 +85,7 @@ class HttpServer
 
         $this->kernel = $kernel;
         $this->foundationFactory = $foundationFactory;
+        $this->httpMessageFactory = $httpMessageFactory;
         $this->logger = $logger;
     }
 
@@ -133,30 +142,22 @@ class HttpServer
 
     /**
      * @param ServerRequestInterface $request
-     * @param callable               $next
      *
      * @return ResponseInterface
      */
-    public function handleRequest(ServerRequestInterface $request, callable $next)
+    public function handleRequest(ServerRequestInterface $request)
     {
         try {
-
             $sfRequest = $this->foundationFactory->createRequest($request);
             $sfResponse = $this->kernel->handle($sfRequest);
             $sfResponse->headers->add(['Access-Control-Allow-Origin' => '*']);
-            $response = $this->foundationFactory->createResponse($sfResponse);
+            $response = $this->httpMessageFactory->createResponse($sfResponse);
             $this->kernel->terminate($sfRequest, $sfResponse);
-
         } catch (HttpException $exception) {
-
             $this->logRequestError($request, $exception);
-
             return new \React\Http\Response($exception->getStatusCode(), $exception->getHeaders(), $exception->getMessage());
-
         } catch (\Throwable $exception) {
-
             $this->logRequestError($request, $exception);
-
             return new \React\Http\Response(500, [], $exception->getMessage());
         }
 
