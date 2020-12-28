@@ -29,5 +29,5 @@ services:
     alias: Symfony\Bridge\PsrHttpMessage\Factory\HttpFoundationFactory
 
   Symfony\Bridge\PsrHttpMessage\HttpMessageFactoryInterface:
-    alias: Symfony\Bridge\PsrHttpMessage\Factory\PsrHttpFactory
+    alias: inisire\ReactBundle\HttpFoundation\Factory\PsrHttpFactory
 
