@@ -2,17 +2,14 @@
 
 namespace inisire\ReactBundle\Server;
 
-use inisire\ReactBundle\Middleware\UploadedFilesProcessor;
+use inisire\ReactBundle\HttpFoundation\PromiseResponse;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 use React\EventLoop\LoopInterface;
-use React\Http\Io\MiddlewareRunner;
-use React\Http\Middleware\RequestBodyBufferMiddleware;
-use React\Http\Middleware\RequestBodyParserMiddleware;
 use React\Http\Server as ReactHttpServer;
+use React\Promise\PromiseInterface;
 use React\Socket\Server as ReactSocketServer;
-use Symfony\Bridge\PsrHttpMessage\Factory\DiactorosFactory;
 use Symfony\Bridge\PsrHttpMessage\HttpFoundationFactoryInterface;
 use Symfony\Bridge\PsrHttpMessage\HttpMessageFactoryInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,6 +17,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
+use function React\Promise\resolve;
 
 class HttpServer
 {
@@ -77,11 +75,8 @@ class HttpServer
 
         $this->httpServer = new ReactHttpServer(
             $loop,
-            new MiddlewareRunner([
-                new UploadedFilesProcessor($this->loop),
-                [$this, 'handleRequest']
-            ]
-        ));
+            [$this, 'handleRequest']
+        );
 
         $this->kernel = $kernel;
         $this->foundationFactory = $foundationFactory;
@@ -143,25 +138,40 @@ class HttpServer
     /**
      * @param ServerRequestInterface $request
      *
-     * @return ResponseInterface
+     * @return ResponseInterface|PromiseInterface
      */
     public function handleRequest(ServerRequestInterface $request)
     {
+        $sfRequest = $this->foundationFactory->createRequest($request);
+
         try {
-            $sfRequest = $this->foundationFactory->createRequest($request);
             $sfResponse = $this->kernel->handle($sfRequest);
-            $sfResponse->headers->add(['Access-Control-Allow-Origin' => '*']);
-            $response = $this->httpMessageFactory->createResponse($sfResponse);
-            $this->kernel->terminate($sfRequest, $sfResponse);
         } catch (HttpException $exception) {
             $this->logRequestError($request, $exception);
-            return new \React\Http\Response($exception->getStatusCode(), $exception->getHeaders(), $exception->getMessage());
+            $sfResponse = new Response($exception->getMessage(), $exception->getStatusCode(), $exception->getHeaders());
         } catch (\Throwable $exception) {
             $this->logRequestError($request, $exception);
-            return new \React\Http\Response(500, [], $exception->getMessage());
+            $sfResponse = new Response($exception->getMessage(), 500);
         }
 
-        return $response;
+        if ($sfResponse instanceof PromiseResponse) {
+            $promise = $sfResponse->getPromise();
+        } else {
+            $promise = resolve($sfResponse);
+        }
+
+        return $promise
+            ->then(
+                function ($sfResponse) use ($sfRequest) {
+                    $sfResponse->headers->add(['Access-Control-Allow-Origin' => '*']);
+                    $response = $this->httpMessageFactory->createResponse($sfResponse);
+                    $this->kernel->terminate($sfRequest, $sfResponse);
+                    return $response;
+                },
+                function (\Error $error) {
+                    return new \React\Http\Message\Response(500, [], $error->getMessage());
+                }
+            );
     }
 
     /**

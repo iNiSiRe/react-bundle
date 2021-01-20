@@ -5,7 +5,6 @@ namespace inisire\ReactBundle\HttpFoundation;
 
 
 use Psr\Http\Message\StreamInterface;
-use React\Stream\ReadableStreamInterface;
 use Symfony\Component\HttpFoundation\Response;
 
 class StreamedResponse extends Response
