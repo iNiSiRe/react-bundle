@@ -163,7 +163,9 @@ class HttpServer
         return $promise
             ->then(
                 function ($sfResponse) use ($sfRequest) {
-                    $sfResponse->headers->add(['Access-Control-Allow-Origin' => '*']);
+                    if ((bool) $_ENV['REACT_ADD_CORS_HEADERS'] ?? true) {
+                        $sfResponse->headers->add(['Access-Control-Allow-Origin' => '*']);
+                    }
                     $response = $this->httpMessageFactory->createResponse($sfResponse);
                     $this->kernel->terminate($sfRequest, $sfResponse);
                     return $response;
