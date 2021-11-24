@@ -11,7 +11,7 @@
     "require": {
         "php": ">=7.1.3",
         "ext-pcntl": "*",
-        "react/http": ">=0.8.0",
+        "react/http": "^v1.0.0",
         "symfony/psr-http-message-bridge": "^1.0",
         "nyholm/psr7": "^1.3"
     }
