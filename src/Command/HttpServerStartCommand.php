@@ -28,15 +28,13 @@ class HttpServerStartCommand extends Command
     private $dispatcher;
 
     /**
-     * @param string|null              $name
      * @param HttpServer               $server
      * @param LoopInterface            $loop
      * @param EventDispatcherInterface $dispatcher
      */
-    public function __construct(string $name = null, HttpServer $server, LoopInterface $loop,
-                                EventDispatcherInterface $dispatcher)
+    public function __construct(HttpServer $server, LoopInterface $loop, EventDispatcherInterface $dispatcher)
     {
-        parent::__construct($name);
+        parent::__construct();
         $this->server = $server;
         $this->loop = $loop;
         $this->dispatcher = $dispatcher;
